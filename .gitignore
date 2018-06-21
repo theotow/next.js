@@ -1,6 +1,6 @@
 # build output
-dist
 .next
+test/isolated/_resolvedata/dist/**
 
 # dependencies
 node_modules
