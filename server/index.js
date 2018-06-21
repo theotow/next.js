@@ -113,44 +113,15 @@ export default class Server {
     asset.setAssetPrefix(this.renderOpts.assetPrefix)
   }
 
-  async prepare () {
-    if (this.dev && process.stdout.isTTY && isAsyncSupported()) {
-      try {
-        const checkForUpdate = require('update-check')
-        const update = await checkForUpdate(pkg, {
-          distTag: pkg.version.includes('canary') ? 'canary' : 'latest'
-        })
-        if (update) {
-          // bgRed from chalk
-          console.log(`\u001B[41mUPDATE AVAILABLE\u001B[49m The latest version of \`next\` is ${update.latest}`)
-        }
-      } catch (err) {
-        console.error('Error checking updates', err)
+  mountRoutes(routes) {
+    for (const method of ['GET', 'HEAD']) {
+      for (const p of Object.keys(routes)) {
+        this.router.add(method, p, routes[p])
       }
     }
-
-    await this.defineRoutes()
-    if (this.hotReloader) {
-      await this.hotReloader.start()
-    }
   }
 
-  async close () {
-    if (this.hotReloader) {
-      await this.hotReloader.stop()
-    }
-
-    if (this.http) {
-      await new Promise((resolve, reject) => {
-        this.http.close((err) => {
-          if (err) return reject(err)
-          return resolve()
-        })
-      })
-    }
-  }
-
-  async defineRoutes () {
+  hookEssentialRoutes() {
     const routes = {
       '/_next-prefetcher.js': async (req, res, params) => {
         const p = join(__dirname, '../client/next-prefetcher-bundle.js')
@@ -252,6 +223,50 @@ export default class Server {
         await this.serveStatic(req, res, p)
       }
     }
+    this.mountRoutes(routes)
+  }
+
+  async prepare () {
+    if (this.dev && process.stdout.isTTY && isAsyncSupported()) {
+      try {
+        const checkForUpdate = require('update-check')
+        const update = await checkForUpdate(pkg, {
+          distTag: pkg.version.includes('canary') ? 'canary' : 'latest'
+        })
+        if (update) {
+          // bgRed from chalk
+          console.log(`\u001B[41mUPDATE AVAILABLE\u001B[49m The latest version of \`next\` is ${update.latest}`)
+        }
+      } catch (err) {
+        console.error('Error checking updates', err)
+      }
+    }
+
+    await this.defineRoutes()
+    if (this.hotReloader) {
+      await this.hotReloader.start()
+    }
+  }
+
+  async close () {
+    if (this.hotReloader) {
+      await this.hotReloader.stop()
+    }
+
+    if (this.http) {
+      await new Promise((resolve, reject) => {
+        this.http.close((err) => {
+          if (err) return reject(err)
+          return resolve()
+        })
+      })
+    }
+  }
+
+  async defineRoutes () {
+    const routes = {}
+
+    this.hookEssentialRoutes()
 
     if (this.nextConfig.useFileSystemPublicRoutes) {
       // Makes `next export` exportPathMap work in development mode.
@@ -273,11 +288,7 @@ export default class Server {
       }
     }
 
-    for (const method of ['GET', 'HEAD']) {
-      for (const p of Object.keys(routes)) {
-        this.router.add(method, p, routes[p])
-      }
-    }
+    this.mountRoutes(routes)
   }
 
   async start (port, hostname) {
