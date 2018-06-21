@@ -113,7 +113,7 @@ export default class Server {
     asset.setAssetPrefix(this.renderOpts.assetPrefix)
   }
 
-  mountRoutes(routes) {
+  mountRoutes (routes) {
     for (const method of ['GET', 'HEAD']) {
       for (const p of Object.keys(routes)) {
         this.router.add(method, p, routes[p])
@@ -121,7 +121,7 @@ export default class Server {
     }
   }
 
-  hookEssentialRoutes() {
+  hookEssentialRoutes () {
     const routes = {
       '/_next-prefetcher.js': async (req, res, params) => {
         const p = join(__dirname, '../client/next-prefetcher-bundle.js')
