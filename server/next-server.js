@@ -97,7 +97,7 @@ export default class Server {
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
   }
 
-  generateRoutesSync() {
+  generateRoutesSync () {
     const routes = [
       {
         path: '/_next/static/:path*',
@@ -150,11 +150,11 @@ export default class Server {
   }
 
   async generateRoutes () {
-    return this.generateRoutesSync();
+    return this.generateRoutesSync()
   }
 
-  defineRoutesSync() {
-    const routes = this.generateRoutesSync();
+  defineRoutesSync () {
+    const routes = this.generateRoutesSync()
 
     for (const method of ['GET', 'HEAD']) {
       for (const route of routes) {
@@ -164,7 +164,7 @@ export default class Server {
   }
 
   async defineRoutes () {
-    const routes = await this.generateRoutes();
+    const routes = await this.generateRoutes()
 
     for (const method of ['GET', 'HEAD']) {
       for (const route of routes) {
